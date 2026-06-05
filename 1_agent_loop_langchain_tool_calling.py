@@ -35,9 +35,33 @@ def apply_discount(prices: list[float], discount_tier: str) -> float:
     discount = discount_rates.get(discount_tier.lower(), 0.0)
     return total - (total * (discount / 100))
 
+
+# without @tools, we can still call the functions as tools by wrapping them in a Tool object and passing them to the agent.
+
+tools_for_llm = [
+    {
+        "type": "function",
+        "function":{
+            "name": "add_product_price",
+            "description": "Look up the price of a product in a catalog.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "product": {
+                        "type": "string",
+                        "description": "The name of the product to look up."
+                    }
+                },
+                "required": ["product"]
+            }
+        }
+    }
+]
+
 #  ----- Agent Loop --- #
 @traceable(name="agent_loop", project="langchain_tool_calling")
 def run_agent(question: str):
+
     tools = [add_product_price, apply_discount]
     tools_dict = {tool.name: tool for tool in tools}
 
